@@ -16,14 +16,10 @@ export default function Home() {
     if (storedTasks) {
       setTasks(storedTasks);
     }
-    console.log("use1")
   }, []);
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
-    const storedTasks = localStorage.getItem('tasks') ? 
-    JSON.parse(localStorage.getItem('tasks')) : [];
-    console.log(storedTasks);
   }, [tasks]);
 
   const getFilteredTasks = () => {
@@ -34,6 +30,11 @@ export default function Home() {
     } else {
       return tasks; 
     }
+  };
+
+  const getNumber = () =>{
+    const com =  tasks.filter((task) => !task.completed);
+    return com.length;
   };
 
   const handleAddTask = () => {
@@ -80,7 +81,7 @@ export default function Home() {
         {/* Basic level: map through tasks state by using this code: */}
         <TaskList tasks={getFilteredTasks()} handleToggleTask={handleToggleTask} handleDeleteTask={handleDeleteTask}/>
         <div className="mt-4 flex justify-between items-center text-sm text-gray-400">
-          <span> 'n' items left</span>  {/* show how many uncompleted items left */}
+          <span> {getNumber()} items left</span>  {/* show how many uncompleted items left */}
           <div>
             <button onClick={() => setFilter("all")} className={`mr-2 ${filter === 'all' ? 'text-white' : ''}`}>All</button>
             <button onClick={() => setFilter("active")} className={`mr-2 ${filter === 'active' ? 'text-white' : ''}`}>Active</button>
