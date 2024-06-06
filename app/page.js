@@ -1,23 +1,58 @@
 'use client'
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import TaskList from './components/TaskList';
 
 const task = {id: 1, text: "Todo Test", completed: false}
 
 export default function Home() {
-  const tasks = []; // rewrite using states
-  const filter = 'all'; // rewrite using states
+  const [tasks, setTasks] = useState([task]);
+  const [text, setText] = useState("");
+  const [filter, setFilter] = useState("all"); // rewrite using states
+
+  useEffect(() => {
+    const storedTasks = localStorage.getItem('tasks') ? 
+    JSON.parse(localStorage.getItem('tasks')) : [];
+    if (storedTasks) {
+      setTasks(storedTasks);
+    }
+    console.log("use1")
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    const storedTasks = localStorage.getItem('tasks') ? 
+    JSON.parse(localStorage.getItem('tasks')) : [];
+    console.log(storedTasks);
+  }, [tasks]);
+
+  const getFilteredTasks = () => {
+    if (filter === 'completed') {
+      return tasks.filter((task) => task.completed);
+    } else if (filter === 'active') {
+      return tasks.filter((task) => !task.completed);
+    } else {
+      return tasks; 
+    }
+  };
 
   const handleAddTask = () => {
     // Implement add task logic here
+    setTasks(() => [...tasks, {id: tasks.length + 1, text: text, completed: false}]);
   };
 
-  const handleToggleTask = () => {
+  const handleToggleTask = (id) => {
       // Implement toggle completed/uncompleted task logic here
+      const updatedTasks = tasks.map((task) => 
+        task.id === id ? { ...task, completed: !task.completed } : task
+      );
+      setTasks(updatedTasks);
   };
 
-  const handleDeleteTask = () => {
+  const handleDeleteTask = (id) => {
       // Implement delete task logic here
-
+      const updatedTasks = tasks.filter((task) => task.id !== id);
+      setTasks(updatedTasks);
   };
 
   return (
@@ -31,6 +66,7 @@ export default function Home() {
           type="text"
           className="bg-gray-800 text-white border-none rounded p-4 flex-grow"
           placeholder="What to do ?"
+          onChange={(e) => setText(e.target.value)}
         />
         <button
           onClick={handleAddTask}
@@ -42,35 +78,13 @@ export default function Home() {
       <div className="bg-gray-800 rounded p-4">
         {/* Medium level: extract todo's listing to TaskList component */}
         {/* Basic level: map through tasks state by using this code: */}
-        <ul>
-          <li className="flex justify-between items-center p-2 bg-gray-900 rounded mb-2">
-            <div className="flex items-center">
-              <button 
-              className="w-6 h-6 my-auto mr-6"
-              onClick={() => alert("Toggle the task status")} 
-              >
-                <Image
-                      src={task.completed ? "/images/circle-cheked.svg" : "/images/circle.svg"}
-                      alt="Task status"
-                      width={30}
-                      height={30}
-                />
-              </button>
-              <span className={`ml-2 ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>{task.text}</span>
-            </div>
-            <button onClick={() => alert("Delete task")} className="text-gray-400 hover:text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </li>
-        </ul>
+        <TaskList tasks={getFilteredTasks()} handleToggleTask={handleToggleTask} handleDeleteTask={handleDeleteTask}/>
         <div className="mt-4 flex justify-between items-center text-sm text-gray-400">
           <span> 'n' items left</span>  {/* show how many uncompleted items left */}
           <div>
-            <button onClick={() => alert("Show all")} className={`mr-2 ${filter === 'all' ? 'text-white' : ''}`}>All</button>
-            <button onClick={() => alert("Show active")} className={`mr-2 ${filter === 'active' ? 'text-white' : ''}`}>Active</button>
-            <button onClick={() => alert("Show completed")} className={`${filter === 'completed' ? 'text-white' : ''}`}>Completed</button>
+            <button onClick={() => setFilter("all")} className={`mr-2 ${filter === 'all' ? 'text-white' : ''}`}>All</button>
+            <button onClick={() => setFilter("active")} className={`mr-2 ${filter === 'active' ? 'text-white' : ''}`}>Active</button>
+            <button onClick={() => setFilter("completed")} className={`${filter === 'completed' ? 'text-white' : ''}`}>Completed</button>
           </div>
           <button
             onClick={() => alert("Clear completed tasks")}
